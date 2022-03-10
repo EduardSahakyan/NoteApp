@@ -2,12 +2,14 @@ package com.example.mynote.data.dao
 
 import androidx.room.*
 import com.example.mynote.data.entity.Note
+import kotlinx.coroutines.flow.Flow
+
 
 @Dao
 interface NoteDao {
 
     @Query("SELECT * FROM notes")
-    fun getNoteList(): List<Note>
+    fun getNoteList(): Flow<List<Note>>
     @Query("SELECT * FROM notes WHERE id =:noteId LIMIT 1 ")
     fun getNote(noteId: Int):Note
     @Insert(onConflict = OnConflictStrategy.REPLACE)

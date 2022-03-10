@@ -1,6 +1,7 @@
 package com.example.mynote.data.database
 
 import android.app.Application
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -18,7 +19,7 @@ abstract class NoteDatabase:RoomDatabase() {
         private var INSTANCE : NoteDatabase? = null
         private val LOCK = Any()
 
-        fun getInstance(application: Application): NoteDatabase{
+        fun getInstance(context: Context): NoteDatabase{
             INSTANCE?.let {
                 return it
             }
@@ -26,7 +27,7 @@ abstract class NoteDatabase:RoomDatabase() {
                 INSTANCE?.let {
                     return it
                 }
-                val db = Room.databaseBuilder(application, NoteDatabase::class.java, "notes")
+                val db = Room.databaseBuilder(context, NoteDatabase::class.java, "notes")
                     .build()
                 INSTANCE = db
                 return db

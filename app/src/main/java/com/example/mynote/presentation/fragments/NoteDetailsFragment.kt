@@ -14,9 +14,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.mynote.R
 import com.example.mynote.data.di.Component
 import com.example.mynote.data.entity.Note
+import com.example.mynote.data.repository.NoteRepository
+import com.example.mynote.data.repository.NoteRepositoryImpl
 import com.example.mynote.databinding.FragmentNoteDetailsBinding
 import com.example.mynote.presentation.viewmodels.NoteDetailsViewModel
+import com.example.mynote.presentation.viewmodels.NoteDetailsViewModelFactory
 import com.example.mynote.presentation.viewmodels.NoteListViewModel
+import com.example.mynote.presentation.viewmodels.NoteListViewModelFactory
 import java.lang.RuntimeException
 
 class NoteDetailsFragment : Fragment() {
@@ -30,6 +34,7 @@ class NoteDetailsFragment : Fragment() {
     lateinit var viewModel: NoteDetailsViewModel
     private lateinit var edit: MenuItem
     private lateinit var save: MenuItem
+    private lateinit var repository: NoteRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,8 +106,9 @@ class NoteDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this)[NoteDetailsViewModel::class.java]
-        Component().injectDetailsFragment(this)
+        repository = Component.getRepository(requireContext())
+        val viewModelFactory = NoteDetailsViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, viewModelFactory)[NoteDetailsViewModel::class.java]
         requireArguments().getString(TITLE_EXTRA)?.let {
             binding.edTitile.setText(it)
         }

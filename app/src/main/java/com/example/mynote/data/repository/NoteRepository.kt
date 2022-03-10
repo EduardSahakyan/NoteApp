@@ -1,16 +1,17 @@
 package com.example.mynote.data.repository
 
 import com.example.mynote.data.entity.Note
+import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository {
 
-    fun addNote(title:String, text:String, backgroundColor:Int)
+    suspend fun addNote(title:String, text:String, backgroundColor:Int)
 
-    fun removeNote(id:Int)
+    suspend fun removeNote(id:Int)
 
-    fun editNote(note:Note)
+    suspend fun editNote(note:Note)
 
-    fun getNote(id:Int):Note
+    suspend fun getNote(id:Int):Note
 
-    fun getNoteList(): List<Note>
+    suspend fun getNoteList(): Flow<List<Note>>
 }
