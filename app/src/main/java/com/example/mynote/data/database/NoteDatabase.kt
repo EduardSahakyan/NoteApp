@@ -14,25 +14,4 @@ abstract class NoteDatabase:RoomDatabase() {
 
     abstract fun noteDAO(): NoteDao
 
-    companion object{
-
-        private var INSTANCE : NoteDatabase? = null
-        private val LOCK = Any()
-
-        fun getInstance(context: Context): NoteDatabase{
-            INSTANCE?.let {
-                return it
-            }
-            synchronized(LOCK){
-                INSTANCE?.let {
-                    return it
-                }
-                val db = Room.databaseBuilder(context, NoteDatabase::class.java, "notes")
-                    .build()
-                INSTANCE = db
-                return db
-            }
-        }
-
-    }
 }

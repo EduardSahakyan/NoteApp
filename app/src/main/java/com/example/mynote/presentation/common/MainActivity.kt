@@ -1,4 +1,4 @@
-package com.example.mynote.presentation
+package com.example.mynote.presentation.common
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,10 +16,4 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
     }
-
-    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.action_menu, menu)
-        return true;
-    }*/
-
 }

@@ -1,14 +1,13 @@
 package com.example.mynote.data.repository
 
-import android.app.Application
 import android.content.Context
-import com.example.mynote.data.database.NoteDatabase
+import com.example.mynote.data.di.Component
 import com.example.mynote.data.entity.Note
 import kotlinx.coroutines.flow.Flow
 
 internal class NoteRepositoryImpl(context: Context): NoteRepository {
 
-    private val noteDao = NoteDatabase.getInstance(context).noteDAO()
+    private val noteDao = Component.getDatabaseInstance(context).noteDAO()
 
     override suspend fun addNote(title: String, text: String, backgroundColor: Int){
         noteDao.insertNote(Note(Note.UNDEFINED, title,text,backgroundColor))
@@ -22,11 +21,11 @@ internal class NoteRepositoryImpl(context: Context): NoteRepository {
         noteDao.updateNote(note)
     }
 
-    override suspend fun getNote(id: Int): Note {
+    override suspend fun getNote(id: Int): Flow<Note> {
         return noteDao.getNote(id)
     }
 
-    override suspend fun getNoteList(): Flow<List<Note>> {
+    override fun getNoteList(): Flow<List<Note>> {
         return noteDao.getNoteList()
     }
 }
