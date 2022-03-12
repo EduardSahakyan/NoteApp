@@ -1,13 +1,15 @@
-package com.example.mynote.presentation.recyclerview
+package com.example.mynote.presentation.notelist.adapter
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mynote.data.entity.Note
 import com.example.mynote.databinding.NoteItemBinding
+import com.example.mynote.presentation.notelist.adapter.viewholders.NoteHolder
 
-class NoteAdapter:RecyclerView.Adapter<NoteAdapter.NoteHolder>() {
+class NoteAdapter:RecyclerView.Adapter<NoteHolder>() {
 
     var onClickListener : ((Note) -> Unit)? = null
     var onLongClickListener : ((Note, View) -> Unit)? = null
@@ -33,13 +35,14 @@ class NoteAdapter:RecyclerView.Adapter<NoteAdapter.NoteHolder>() {
         }
     }
 
-
     override fun getItemCount(): Int {
         return noteList.size
     }
 
-    class NoteHolder(val binding: NoteItemBinding): RecyclerView.ViewHolder(binding.root){
-
+    fun updateData(notes: List<Note>){
+        val diffCallback = DiffCallback(noteList, notes)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        noteList = notes
+        diffResult.dispatchUpdatesTo(this)
     }
-
 }

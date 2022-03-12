@@ -1,4 +1,4 @@
-package com.example.mynote.presentation.viewmodels
+package com.example.mynote.presentation.notedetails
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,16 +18,14 @@ class NoteDetailsViewModel(private val repository: NoteRepository): ViewModel() 
     private val editNote: EditNoteUseCase = EditNoteUseCaseImpl(repository)
     val backgroundColor = MutableLiveData<Int>()
 
-    fun add(title:String, text:String, backgroundColor:Int){
+    fun add(title:String, text:String, backgroundColor:Int) {
         viewModelScope.launch(Dispatchers.IO) {
             addNote(title, text, backgroundColor) }
     }
 
-    fun edit(note: Note){
+    fun edit(note: Note) {
         viewModelScope.launch(Dispatchers.IO){
             editNote(note)
         }
     }
-
-
 }

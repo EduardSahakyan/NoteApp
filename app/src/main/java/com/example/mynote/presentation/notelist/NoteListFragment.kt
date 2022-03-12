@@ -1,38 +1,38 @@
-package com.example.mynote.presentation.fragments
+package com.example.mynote.presentation.notelist
 
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.mynote.R
 import com.example.mynote.data.di.Component
 import com.example.mynote.data.entity.Note
 import com.example.mynote.data.repository.NoteRepository
-import com.example.mynote.data.repository.NoteRepositoryImpl
 import com.example.mynote.databinding.FragmentNoteListBinding
-import com.example.mynote.presentation.recyclerview.NoteAdapter
-import com.example.mynote.presentation.viewmodels.NoteListViewModel
-import com.example.mynote.presentation.viewmodels.NoteListViewModelFactory
+import com.example.mynote.presentation.notedetails.NoteDetailsFragment
+import com.example.mynote.presentation.notelist.adapter.NoteAdapter
 import java.lang.RuntimeException
 
 class NoteListFragment : Fragment() {
 
-    private lateinit var noteAdapter: NoteAdapter
-    private lateinit var viewModel : NoteListViewModel
-    private lateinit var repository: NoteRepository
-
+    private val noteAdapter: NoteAdapter by lazy {
+        NoteAdapter()
+    }
+    private val repository: NoteRepository by lazy {
+        Component.getRepository(requireContext())
+    }
+    private val viewModelFactory: NoteListViewModelFactory by lazy {
+        NoteListViewModelFactory(repository)
+    }
+    private val viewModel : NoteListViewModel by viewModels { viewModelFactory }
 
     private var _binding : FragmentNoteListBinding? = null
     private val binding : FragmentNoteListBinding
-        get() = _binding ?: throw RuntimeException("NoteListBinding is null")
-
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    get() = _binding ?: throw RuntimeException("NoteListBinding is null")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,17 +49,20 @@ class NoteListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        repository = Component.getRepository(requireContext())
-        val viewModelFactory = NoteListViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, viewModelFactory)[NoteListViewModel::class.java]
-        noteAdapter = NoteAdapter()
+        init()
+        observers()
+        listeners()
+    }
+
+    private fun init(){
         binding.recyclerView.adapter = noteAdapter
         viewModel.getNotes()
+    }
+
+    private fun observers(){
         viewModel.noteList.observe(viewLifecycleOwner){
-            noteAdapter.noteList = it
-            noteAdapter.notifyDataSetChanged()
+            noteAdapter.updateData(it)
         }
-        listeners()
     }
 
     private fun listeners(){
@@ -79,7 +82,7 @@ class NoteListFragment : Fragment() {
             popup.show()
         }
         binding.addButton.setOnClickListener{
-            val note = Note(0, "", "", 1)
+            val note = Note(0, "", "", ContextCompat.getColor(requireActivity(), R.color.purple_200))
             openDetailsFragment(note, true)
         }
     }
@@ -91,5 +94,4 @@ class NoteListFragment : Fragment() {
             .addToBackStack(null)
             .commit()
     }
-
 }
