@@ -13,9 +13,9 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE id =:noteId LIMIT 1 ")
     fun getNote(noteId: Int):Flow<Note>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertNote(note: Note)
+    suspend fun insertNote(note: Note)
     @Update
-    fun updateNote(note: Note)
+    suspend fun updateNote(note: Note)
     @Query("DELETE FROM notes WHERE id =:noteId")
-    fun deleteNote(noteId: Int)
+    suspend fun deleteNote(noteId: Int)
 }
