@@ -1,6 +1,7 @@
 package com.example.mynote.presentation.notedetails
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.annotation.ColorInt
@@ -18,23 +19,17 @@ import java.lang.RuntimeException
 
 class NoteDetailsFragment : Fragment() {
 
-    private var isNewNote: Boolean = false
-    @ColorInt private var colorBackground: Int = -1
-    private var noteId: Int = -1;
-    private var edit: MenuItem? = null
-    private var save: MenuItem? = null
-
     private val repository: NoteRepository by lazy {
         Component.getRepository(requireContext())
     }
     private val viewModelFactory: NoteDetailsViewModelFactory by lazy {
         NoteDetailsViewModelFactory(repository)
     }
-    private val viewModel: NoteDetailsViewModel by viewModels{ viewModelFactory }
+    private val viewModel: NoteDetailsViewModel by viewModels { viewModelFactory }
 
-    private var _binding:FragmentNoteDetailsBinding? = null
-    private val binding:FragmentNoteDetailsBinding
-    get() = _binding ?: throw RuntimeException("NoteDetailBinding is null")
+    private var _binding: FragmentNoteDetailsBinding? = null
+    private val binding: FragmentNoteDetailsBinding
+        get() = _binding ?: throw RuntimeException("NoteDetailBinding is null")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,17 +38,29 @@ class NoteDetailsFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.action_menu, menu)
-        edit = menu.findItem(R.id.edit)
-        edit?.isVisible = !isNewNote
-        save = menu.findItem(R.id.save)
-        save?.isVisible = isNewNote
-        setEditable(isNewNote)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        Log.d("EXCTEST", "${viewModel.editable.value}")
+        menu.findItem(R.id.edit).isVisible = !viewModel.editable.value!!
+        menu.findItem(R.id.save).isVisible = viewModel.editable.value!!
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.edit -> setEditable(true)
-            R.id.save -> save(isNewNote)
+        when (item.itemId) {
+            R.id.edit -> viewModel.setEditable(true)
+            R.id.save -> binding.apply {
+                if (edTitile.text.isNotBlank() && edText.text.isNotBlank()) {
+                    viewModel.save(edTitile.text.toString(), edText.text.toString())
+                    viewModel.setEditable(false)
+                } else
+                    Toast.makeText(
+                        requireContext(),
+                        resources.getString(R.string.error_input),
+                        Toast.LENGTH_LONG
+                    ).show()
+            }
         }
         return false
     }
@@ -74,6 +81,7 @@ class NoteDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         parseArgs()
+        observers()
         listeners()
     }
 
@@ -81,57 +89,47 @@ class NoteDetailsFragment : Fragment() {
         requireArguments().apply {
             binding.edTitile.setText(getString(TITLE_EXTRA))
             binding.edText.setText(getString(TEXT_EXTRA))
-            isNewNote = getBoolean(EDITABLE_EXTRA)
-            noteId = getInt(ID_EXTRA)
-            colorBackground = getInt(COLOR_EXTRA)
-            binding.root.setBackgroundColor(colorBackground)
+            viewModel.initValues(getInt(ID_EXTRA), getBoolean(EDITABLE_EXTRA), getInt(COLOR_EXTRA))
         }
     }
 
-    private fun save(isNoteNew:Boolean) {
-        if(binding.edTitile.text.toString().isNotBlank() && binding.edText.text.toString().isNotBlank()) {
-            if(isNoteNew)
-                viewModel.add(binding.edTitile.text.toString(), binding.edText.text.toString(), colorBackground)
-            else {
-                val note = Note(noteId, binding.edTitile.text.toString(), binding.edText.text.toString(), colorBackground)
-                viewModel.edit(note)
-            }
-            requireActivity().supportFragmentManager.popBackStack()
+    private fun observers() {
+        viewModel.backgroundColor.observe(viewLifecycleOwner) {
+            binding.root.setBackgroundColor(it)
         }
-        else
-            Toast.makeText(requireContext(), "Please enter title/text", Toast.LENGTH_LONG).show()
+        viewModel.editable.observe(viewLifecycleOwner){
+            requireActivity().invalidateOptionsMenu()
+            setEditable(it)
+        }
     }
 
-    private fun listeners() = with(binding){
+    private fun listeners() = with(binding) {
         color.setOnClickListener {
-            if(card.isVisible)
+            if (card.isVisible)
                 card.visibility = View.GONE
-            else{
+            else {
                 card.visibility = View.VISIBLE
             }
             setEditable(true)
         }
         colorOne.setOnClickListener {
-            setBackgroundColor(R.color.purple_200)
+            viewModel.setBackgroundColor(getBackgroundColor(R.color.purple_200))
         }
         colorTwo.setOnClickListener {
-            setBackgroundColor(R.color.purple_500)
+            viewModel.setBackgroundColor(getBackgroundColor(R.color.purple_500))
         }
         colorThree.setOnClickListener {
-            setBackgroundColor(R.color.teal_200)
+            viewModel.setBackgroundColor(getBackgroundColor(R.color.teal_200))
         }
     }
 
-    private fun setBackgroundColor(id : Int){
-        colorBackground = ContextCompat.getColor(requireContext(), id)
-        binding.root.setBackgroundColor(colorBackground)
+    private fun getBackgroundColor(id: Int): Int {
+        return ContextCompat.getColor(requireContext(), id)
     }
 
-    private fun setEditable(editable:Boolean){
+    private fun setEditable(editable: Boolean) {
         binding.edTitile.isEnabled = editable
         binding.edText.isEnabled = editable
-        edit?.isVisible = !editable
-        save?.isVisible = editable
     }
 
     companion object {
@@ -142,7 +140,7 @@ class NoteDetailsFragment : Fragment() {
         private const val TEXT_EXTRA = "text"
         private const val EDITABLE_EXTRA = "flag"
 
-        fun newInstance(note:Note, editable:Boolean) : NoteDetailsFragment {
+        fun newInstance(note: Note, editable: Boolean): NoteDetailsFragment {
             return NoteDetailsFragment().apply {
                 arguments = Bundle().apply {
                     putInt(COLOR_EXTRA, note.backgroundColor)
