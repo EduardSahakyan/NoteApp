@@ -29,6 +29,8 @@ class NoteDetailsViewModel(private val repository: NoteRepository): ViewModel() 
     private val noteId = MutableLiveData<Int>()
     private val _isNewNote = MutableLiveData<Boolean>()
     val isNewNote : LiveData<Boolean> = _isNewNote
+    private val _editable = MutableLiveData<Boolean>()
+    val editable : LiveData<Boolean> = _editable
 
     private fun add(title:String, text:String, backgroundColor:Int) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -41,10 +43,15 @@ class NoteDetailsViewModel(private val repository: NoteRepository): ViewModel() 
         }
     }
 
+    fun setEditable(editable:Boolean){
+        _editable.value = editable
+    }
+
     fun initValues(noteId: Int, isNewNote:Boolean, @ColorInt backgroundColor: Int) {
         _backgroundColor.value = backgroundColor
         this.noteId.value = noteId
         _isNewNote.value = isNewNote
+        _editable.value = isNewNote
         Log.d("TESTTT", "${_isNewNote.value}")
     }
 
